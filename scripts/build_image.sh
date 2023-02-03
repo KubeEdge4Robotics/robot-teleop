@@ -50,50 +50,67 @@ function do_check() {
   check_nodes
 }
 
-function download_configs() {
-    yaml_dir=scripts/build
-    yaml_files=(
-        teleop.yaml
-    )
+function download() {
+    target_uri=$1
+    download_dir=$2
+    file_name=($(basename $target_uri))
+    echo "downloading $target_uri into $download_dir"
 
-    for yaml in ${yaml_files[@]}; do
-        if [ ! -e $yaml_dir/${yaml} ]
-        then
-            echo "downloading $yaml into $yaml_dir"
-
-            local try_times=30 i=1 timeout=2
-            while ! timeout ${timeout}s curl -sS -o ${yaml_dir}/${yaml} https://raw.githubusercontent.com/${REPO}/main/${yaml_dir}/${yaml}; do
-                ((++i>try_times)) && {
-                    echo timeout to download $yaml
-                    exit 2
-                }
-                echo -en "retrying to download $yaml after $[i*timeout] seconds...\r"
-            done
-        fi
-    done
-}
-
-function build_images() {
-    dockerfiles=(
-        client
-        robot
-        server
-    )
-
-    for dockerfile in ${dockerfiles[@]}; do
-        echo "Building $dockerfile"
-        file_uri=${dockerfile}/Dockerfile
-        docker build -f $file_uri -t ${REPO_PREFIX}${dockerfile}:${REPO_VERSION} --label roboartisan=app ..
+    local try_times=30 i=1 timeout=2
+    while ! timeout ${timeout}s curl -sS -o ${download_dir}/${file_name} $target_uri; do
+        ((++i>try_times)) && {
+            echo timeout to download $file_name
+            exit 2
+        }
+        echo -en "retrying to download $file_name after $[i*timeout] seconds...\r"
     done
 }
 
 function deploy_app() {
-    download_configs
+    yaml_dir=build
+    yaml_files=(
+        conf
+        turnserver
+        server
+        client
+        robot
+    )
+
+    for yaml in ${yaml_files[@]}; do
+        file_uri=${yaml_dir}/teleop-${yaml}.yaml
+
+        if [ ! -e ${file_uri} ]
+        then
+            download https://raw.githubusercontent.com/${REPO}/main/scripts/${file_uri} $yaml_dir
+        fi
+
+        kubectl apply -f ${file_uri}
+    done
 
 }
 
-function prepare() {
-    do_check
+function build_images() {
+    df_dir=build 
+    dockerfiles=(
+        client
+        robot
+        server
+        turnserver
+    )
+
+    for dockerfile in ${dockerfiles[@]}; do
+        file_uri=${df_dir}/${dockerfile}.Dockerfile
+
+        if [ ! -e ${file_uri} ]
+        then
+            download https://raw.githubusercontent.com/${REPO}/main/scripts/${file_uri} $df_dir
+        fi
+
+        echo "Building $dockerfile"
+        docker build -f $file_uri -t ${REPO_PREFIX}${dockerfile}:${REPO_VERSION} --label roboartisan=app .. &
+    done
+
+    wait
 }
 
 function build() {
@@ -101,7 +118,8 @@ function build() {
 }
 
 function deploy() {
-
+    do_check
+    deploy_app
 }
 
 CLUSTER_NODES=($(echo "${CLUSTER_NODES[@]}" | tr ' ' '\n' | sort -u))

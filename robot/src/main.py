@@ -30,7 +30,9 @@ from robosdk.common.schema.pose import BasePose
 from robosdk.common.schema.map import PgmMap
 from robosdk.algorithms.navigation.planning import RosMoveBase
 from robosdk.algorithms.perception.mapping.visual import RosMapVisual
-from robosdk.cloud_robotics.remote_control.edge.webrtc import ControlRTCRobot
+
+from middleware import ControlRTCRobot
+
 
 
 class RoboClient:

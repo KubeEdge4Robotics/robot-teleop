@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: teleop
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: teleop
+  template:
+    metadata:
+      labels:
+        app: teleop
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: node-role.kubernetes.io/cloud-telep
+                  operator: In
+                  values:
+                  - robot
+                - key: node-role.kubernetes.io/agent
+                  operator: Exists
+      containers:
+      - name: teleop
+        image: kubeedge/robot-teleop-robot:0.0.1
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: ROS_MASTER_URI
+          value: "http://localhost:11311"
+        - name: LOG_DIR
+          value: "/share/robosdk/logs"
+        - name: SERVER_URL
+          value: "ws://kms.default:8888/kurento"
+        resources:  # user defined resources
+          requests:
+            memory: 64M
+            cpu: 100m
+          limits:
+            memory: 2Gi
+        volumeMounts:
+          - name: config-dir
+            mountPath: /share/robosdk/configs/robots/
+            readOnly: true
+          - name: log-dir
+            mountPath: /share/robosdk/logs
+      volumes:
+      - name: config-dir
+        configMap:
+          name: teleop-config
+          items:
+            - key: "teleop-robot.yaml"
+              path: "teleop.yaml"
+      - name: log-dir
+        hostPath:
+          path: /share/robosdk/logs
+          type: Directory

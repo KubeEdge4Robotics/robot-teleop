@@ -1,0 +1,185 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        app: redis
+      labels:
+        app: redis
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/cloud-telep
+                    operator: In
+                    values:
+                      - server
+                  - key: node-role.kubernetes.io/agent
+                    operator: Exists
+      containers:
+        - env:
+            - name: REDIS_PASSWORD
+              value: KubeEdgeSecret
+            - name: REDIS_BINDING
+              value: 0.0.0.0
+          image: openvidu/openvidu-redis:master
+          name: redis
+          ports:
+          - containerPort: 6379
+            name: redis-port
+      restartPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-svc
+spec:
+  ports:
+    - name: redis-port
+      port: 6379
+      targetPort: redis-port
+  selector:
+    app: redis
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kms
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: kms
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: kms
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: node-role.kubernetes.io/cloud-telep
+                  operator: In
+                  values:
+                  - server
+                - key: node-role.kubernetes.io/agent
+                  operator: Exists
+      containers:
+      - name: kms
+        image: kurento/kurento-media-server:latest
+        imagePullPolicy: Always
+        env:
+          - name: "GST_DEBUG"
+            value: "4,*sdp*:6,*webrtc*:6,*endpoint*:6,agnosticbin:6,KurentoWebSocket*:6"
+          - name: "KMS_ICE_TCP"
+            value: "0"
+          - name: "KMS_TURN_URL"
+            value: "coturn-svc.default:12345"
+          - name: "KMS_STUN_IP"
+            value: "coturn-svc.default"
+          - name: "KMS_STUN_PORT"
+            value: "12345"
+          - name: "KMS_NETWORK_INTERFACES"
+            value: "eth0"
+          - name: "KMS_MIN_PORT"
+            value: "10000"
+          - name: "KMS_MAX_PORT"
+            value: "20000"
+        ports:
+        - containerPort: 8888
+          name: kms-port
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kms
+  labels:
+    app: kms
+spec:
+  selector:
+    app: kms
+  ports:
+    - port: 8888
+      protocol: TCP
+      name: kms-port
+      targetPort: kms-port
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rtc-server
+spec:
+  selector:
+    matchLabels:
+      app: rtc-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: rtc-server
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: node-role.kubernetes.io/cloud-telep
+                  operator: In
+                  values:
+                  - server
+                - key: node-role.kubernetes.io/agent
+                  operator: Exists
+      containers:
+      - name: rtc-server
+        image: openvidu/openvidu-server:master
+        imagePullPolicy: IfNotPresent
+        args: ["/usr/local/bin/entrypoint.sh"]
+        ports:
+        - containerPort: 5443
+          name: rtc-server-port
+        volumeMounts:
+          - name: rtc-env
+            mountPath: "/"
+            readOnly: true
+      volumes:
+      - name: rtc-env
+        configMap:
+          name: teleop-config
+          items:
+            - key: "teleop-server.env"
+              path: ".env"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rtc-server
+  labels:
+    app: rtc-server
+spec:
+  type: LoadBalancer
+  selector:
+    app: rtc-server
+  ports:
+    - port: 23456
+      protocol: TCP
+      name: rtc-server-port
+      targetPort: rtc-server-port

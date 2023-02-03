@@ -1,0 +1,113 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: teleop-config
+  namespace: default
+data:
+  teleop-ice-servers: |
+    {
+      'urls': [
+          'turn:coturn-svc:12345?transport=udp',
+          'stun:stun.l.google.com:19302',
+          'stun:stun.l.google.com:19302?transport=udp',
+      ]
+    }
+  teleop-server.env: |
+    COTURN_IP="coturn-svc.default"
+    COTURN_PORT="12345"
+    COTURN_REDIS_IP=redis-svc
+    COTURN_REDIS_PASSWORD=KubeEdgeSecret
+    DOMAIN_OR_PUBLIC_IP=rtc-server
+    HTTPS_PORT="443"
+    HTTP_PORT="80"
+    KMS_URIS='["ws://kms.default:8888/kurento"]'
+    OPENVIDU_CDR="false"
+    OPENVIDU_CDR_PATH=/opt/openvidu/cdr
+    OPENVIDU_RECORDING="false"
+    OPENVIDU_RECORDING_AUTOSTOP_TIMEOUT="120"
+    OPENVIDU_RECORDING_CUSTOM_LAYOUT=/opt/openvidu/custom-layout
+    OPENVIDU_RECORDING_DEBUG="false"
+    OPENVIDU_RECORDING_NOTIFICATION=publisher_moderator
+    OPENVIDU_RECORDING_PATH=/opt/openvidu/recordings
+    OPENVIDU_RECORDING_PUBLIC_ACCESS="false"
+    OPENVIDU_SECRET=KubeEdgeSecret
+    OPENVIDU_WEBHOOK="false"
+    OPENVIDU_WEBHOOK_EVENTS='[sessionCreated,sessionDestroyed,participantJoined,participantLeft,webrtcConnectionCreated,webrtcConnectionDestroyed,recordingStatusChanged,filterEventDispatched,mediaNodeStatusChanged,nodeCrashed]'
+    SERVER_PORT="5443"
+    SERVER_SSL_ENABLED="false"
+  teleop-server.yaml: |
+    map:
+      name: "teleoperation"
+      driver: "ros_pgm_map"
+      param:
+        save_url: "/tmp"
+    service:
+      driver: "rtc_teleop_server"
+  teleop-robot.yaml: |
+    name: "agilex"
+    manufacturer: "agilex"
+    series: "scout"
+    description: "Wheeled trolley with operating arm"
+    environment:
+      backend: "ros1"  # ros1 / ros2 / harmony
+      requirement:
+        - rospy
+        - rostopic
+        - roslib
+    sensors:
+      camera:
+        - name: "camera_front"
+          config: "realsense435i"
+          rgb:
+            target: "/camera/color/image_raw" # Topic in ros or function in class
+            actual_hz: 10
+            origin_hz: 30
+            is_compressed: false
+          depth:
+            target: "/camera/depth/image_rect_raw"
+            aligned_depth_to_color: "/camera/aligned_depth_to_color/image_raw"
+          info:
+            target: "/camera/color/camera_info"
+        - name: "camera_arm"
+          config: "realsense435i"
+          rgb:
+            target: "/cam1/color/image_raw"
+            actual_hz: 10
+            origin_hz: 30
+            is_compressed: false
+          depth:
+            target: "/cam1/depth/image_rect_raw"
+            aligned_depth_to_color: "/cam1/aligned_depth_to_color/image_raw"
+          info:
+            target: "/cam1/color/camera_info"
+      battery:
+        - name: "battery"
+          config: "simplebattery"
+          data:
+            target: "/battery_level"
+            actual_hz: 1
+            origin_hz: 10
+      odom:
+        - name: "odom"
+          config: "transform"
+          data:
+            target: "/tf"
+      lidar:
+        - name: "laser"
+          config: "simplelaser"
+          data:
+            target: "/scan"
+            laser_frame: "velodyne"
+      maps:
+        - name: "maps"
+          config: "simplemap"
+          data:
+            map: "/map"
+            meta: "/map_meta"
+            kind: "topic"
+    control:
+      - motion:
+          name: "ros_cmd_vel"
+          config: "cmd_vel"
+
+  

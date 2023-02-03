@@ -13,11 +13,33 @@
 # limitations under the License.
 
 from robosdk.core.world import World
+from robosdk.common.class_factory import ClassFactory
+from robosdk.common.class_factory import ClassType
+from robosdk.cloud_robotics.cloud_base import ServiceBase
+
+
+@ClassFactory.register(ClassType.CLOUD_ROBOTICS, "rtc_teleop_server")
+class RTCTeleopServer(ServiceBase):
+    def __init__(self,
+                 name: str = "control",
+                 host: str = "0.0.0.0",
+                 port: int = 5540,
+                 static_folder: str = "",):
+        super(RTCTeleopServer, self).__init__(
+            name=name, host=host, port=port, static_folder=static_folder
+        )
+
+    def run(self, **kwargs):
+        self.server.initial()
+        super(RTCTeleopServer, self).run(**kwargs)
+
+    def close(self):
+        self.app.shutdown = True
 
 
 def main():
 
-    server: World = World(name="teleoperation", config="example")
+    server: World = World(name="teleoperation", config="teleop")
     server.start()
 
 

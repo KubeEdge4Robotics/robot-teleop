@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "turnserver-conf"
+data:
+  turnserver.conf: |
+    lt-cred-mech
+    no-tls
+    no-dtls
+    listening-port=80
+    min-port=49150
+    max-port=49151
+    realm=coturn-svc.default:12345
+    # external-ip=xxx.xxx.xxx.xxx
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coturn
+  labels:
+    app: coturn
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: coturn
+  template:
+    metadata:
+      labels:
+        app: coturn
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: node-role.kubernetes.io/cloud-telep
+                  operator: In
+                  values:
+                  - server
+                - key: node-role.kubernetes.io/agent
+                  operator: Exists
+      containers:
+      - name: teleop-coturn
+        image: kubeedge/robot-teleop-coturn:0.0.1
+        imagePullPolicy: IfNotPresent
+        args: ["-c", "/etc/turnserver.conf"]
+        ports:
+        - containerPort: 80
+          name: coturn-listen
+          protocol: UDP
+        - containerPort: 49150
+          name: coturn-udp0
+          protocol: UDP
+        - containerPort: 49151
+          name: coturn-udp1
+          protocol: UDP
+        volumeMounts:
+          - name: config
+            mountPath: "/etc/turnserver.conf"
+            subPath: turnserver.conf
+      volumes:
+      - name: config
+        configMap:
+          name: "turnserver-conf"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: coturn-svc
+spec:
+  selector:
+    app: coturn
+  ports:
+    - name: coturn-listen
+      port: 12345
+      protocol: UDP
+      targetPort: coturn-listen
+    - name: coturn-udp0
+      port: 12346
+      protocol: UDP
+      targetPort: coturn-udp0
+    - name: coturn-udp1
+      port: 12347
+      protocol: UDP
+      targetPort: coturn-udp1
