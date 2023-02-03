@@ -1,0 +1,4 @@
+redis>=4.5.1
+cachetools>=5.2.0
+injector>=0.20.1
+pyee>=9.0.4

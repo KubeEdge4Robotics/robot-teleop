@@ -1,8 +1,0 @@
-# temp build directories
-_output
-
-tmp
-*-tmp
-
-# dot files
-.*

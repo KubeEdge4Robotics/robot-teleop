@@ -1,0 +1,284 @@
+# turn-server
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coturn
+  labels:
+    app: coturn
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: coturn
+  template:
+    metadata:
+      labels:
+        app: coturn
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: node-role.kubernetes.io/cloud-telep
+                  operator: In
+                  values:
+                  - server
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: teleop-coturn
+        image: swr.cn-south-1.myhuaweicloud.com/robo/robot-teleop-coturn:0.0.1
+        imagePullPolicy: IfNotPresent
+        args: ["-c", "/etc/turnserver.conf"]
+        ports:
+        - containerPort: 3487
+          name: coturn-listen
+        - containerPort: 3487
+          name: coturn-udp
+          protocol: UDP
+        volumeMounts:
+          - name: config
+            mountPath: "/etc/turnserver.conf"
+            subPath: turnserver.conf
+      volumes:
+      - name: config
+        configMap:
+          name: "teleop-config"
+          items:
+            - key: "teleop-ice-server.conf"
+              path: "turnserver.conf"
+
+---
+# redis
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  labels:
+    app: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: node-role.kubernetes.io/cloud-telep
+                  operator: In
+                  values:
+                  - server
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: redis
+        image: redis:alpine
+        ports:
+        - containerPort: 6379
+          name: redis
+
+---
+# rtc-server
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rtc-server
+spec:
+  selector:
+    matchLabels:
+      app: rtc-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: rtc-server
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: node-role.kubernetes.io/cloud-telep
+                  operator: In
+                  values:
+                  - server
+      containers:
+      - name: rtc-server
+        image: swr.cn-south-1.myhuaweicloud.com/robo/robot-teleop-server:0.0.1
+        imagePullPolicy: IfNotPresent
+        args: ["/code/server/main.py"]
+        ports:
+        - containerPort: 5540
+          name: rtc-server-port
+        env:
+          - name: LOG_DIR
+            value: "/share/robosdk/logs"
+          - name: CFG_PATH
+            value: "/share/robosdk/configs"
+          - name: USER_CFG_PATH
+            value: "/share/robosdk/custom/teleop-user-custom.yaml"
+          - name: RTC_ICE_SERVER
+            value: "/share/robosdk/teleop-ice-servers.json"
+          - name: CLOUD_SERVERS_SSL_CERT
+            value: "/etc/certs/tls.crt"
+          - name: CLOUD_SERVERS_SSL_KEY
+            value: "/etc/certs/tls.key"
+          - name: teleop_server_url
+            value: "https://xxx.xxx.xxx.xxx:8443"
+          - name: redis_url
+            value: "redis://redis-service:6379"
+          - name: oms_server_uri
+            value: "https://robooms.myhuaweicloud.com/oms/v1/
+          - name: rtc_server_uri
+            value: "https://rtc-api.myhuaweicloud.com/v2/"
+          - name: apisecret
+            valueFrom:
+              secretKeyRef:
+                name: sys-secret
+                key: AUTHTOKEN
+          - name: username
+            valueFrom:
+              secretKeyRef:
+                name: sys-secret
+                key: USERNAME
+          - name: password
+            valueFrom:
+              secretKeyRef:
+                name: sys-secret
+                key: PASSWORD
+          - name: domain
+            valueFrom:
+              secretKeyRef:
+                name: sys-secret
+                key: DOMAIN
+          - name: AUTH_DOMAIN
+            valueFrom:
+              secretKeyRef:
+                name: sys-secret
+                key: AUTH_DOMAIN
+          - name: project_id
+            valueFrom:
+              secretKeyRef:
+                name: sys-secret
+                key: PROJECT_ID
+        volumeMounts:
+          - name: teleop-user-custom
+            mountPath: "/share/robosdk/custom/"
+            readOnly: true
+          - name: log-dir
+            mountPath: "/share/robosdk/logs"
+          - name: rtc-ice-servers
+            mountPath: "/share/robosdk/teleop-ice-servers.json"
+            subPath: "teleop-ice-servers.json"
+          - name: secret-volume
+            readOnly: true
+            mountPath: "/etc/certs/"
+      volumes:
+      - name: rtc-ice-servers
+        configMap:
+          name: teleop-config
+          items:
+            - key: "teleop-ice-servers.json"
+              path: "teleop-ice-servers.json"
+      - name: teleop-user-custom
+        configMap:
+          name: teleop-config
+          items:
+            - key: "teleop-user-custom.yaml"
+              path: "teleop-user-custom.yaml"
+      - name: log-dir
+        hostPath:
+          path: "/share/robosdk/logs"
+          type: DirectoryOrCreate
+      - name: secret-volume
+        secret:
+          secretName: webrtc-server-secret
+          items:
+            - key: tls.crt
+              path: tls.crt
+            - key: tls.key
+              path: tls.key
+
+---
+# redis service
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  labels:
+    app: redis
+spec:
+  type: ClusterIP
+  selector:
+    app: redis
+  ports:
+    - port: 6379
+      protocol: TCP
+      name: redis
+      targetPort: redis
+
+---
+# turn-server service
+apiVersion: v1
+kind: Service
+metadata:
+  name: turn-server
+  labels:
+    app: turn-server
+spec:
+  type: LoadBalancer
+  selector:
+    app: coturn
+  loadBalancerIP: xxx.xxx.xxx.xxx
+  ports:
+    - port: 3487
+      protocol: TCP
+      name: turn-server-port
+      targetPort: coturn-listen
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: turn-server-udp
+  labels:
+    app: turn-server-udp
+spec:
+  type: LoadBalancer
+  selector:
+    app: coturn
+  loadBalancerIP: xxx.xxx.xxx.xxx
+  ports:
+    - port: 3487
+      protocol: UDP
+      name: turn-server-udp
+      targetPort: coturn-udp
+
+---
+# teleop-server service
+apiVersion: v1
+kind: Service
+metadata:
+  name: rtc-server
+  labels:
+    app: rtc-server
+spec:
+  type: LoadBalancer
+  selector:
+    app: rtc-server
+  loadBalancerIP: xxx.xxx.xxx.xxx
+  externalTrafficPolicy: Cluster
+  ports:
+    - port: 8443
+      protocol: TCP
+      name: rtc-server-port
+      targetPort: rtc-server-port
