@@ -157,8 +157,8 @@ spec:
           name: rtc-server-port
         volumeMounts:
           - name: rtc-env
-            mountPath: "/"
-            readOnly: true
+            mountPath: "/.env"
+            subPath: ".env"
       volumes:
       - name: rtc-env
         configMap:

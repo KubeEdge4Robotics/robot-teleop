@@ -13,28 +13,28 @@ data:
       ]
     }
   teleop-server.env: |
-    COTURN_IP="coturn-svc.default"
-    COTURN_PORT="12345"
+    COTURN_IP=coturn-svc.default.svc.cluster.local
+    COTURN_PORT=12345
     COTURN_REDIS_IP=redis-svc
     COTURN_REDIS_PASSWORD=KubeEdgeSecret
     DOMAIN_OR_PUBLIC_IP=rtc-server
-    HTTPS_PORT="443"
-    HTTP_PORT="80"
+    HTTPS_PORT=443
+    HTTP_PORT=80
     KMS_URIS='["ws://kms.default:8888/kurento"]'
-    OPENVIDU_CDR="false"
+    OPENVIDU_CDR=false
     OPENVIDU_CDR_PATH=/opt/openvidu/cdr
-    OPENVIDU_RECORDING="false"
-    OPENVIDU_RECORDING_AUTOSTOP_TIMEOUT="120"
+    OPENVIDU_RECORDING=false
+    OPENVIDU_RECORDING_AUTOSTOP_TIMEOUT=120
     OPENVIDU_RECORDING_CUSTOM_LAYOUT=/opt/openvidu/custom-layout
-    OPENVIDU_RECORDING_DEBUG="false"
+    OPENVIDU_RECORDING_DEBUG=false
     OPENVIDU_RECORDING_NOTIFICATION=publisher_moderator
     OPENVIDU_RECORDING_PATH=/opt/openvidu/recordings
-    OPENVIDU_RECORDING_PUBLIC_ACCESS="false"
+    OPENVIDU_RECORDING_PUBLIC_ACCESS=false
     OPENVIDU_SECRET=KubeEdgeSecret
-    OPENVIDU_WEBHOOK="false"
+    OPENVIDU_WEBHOOK=false
     OPENVIDU_WEBHOOK_EVENTS='[sessionCreated,sessionDestroyed,participantJoined,participantLeft,webrtcConnectionCreated,webrtcConnectionDestroyed,recordingStatusChanged,filterEventDispatched,mediaNodeStatusChanged,nodeCrashed]'
-    SERVER_PORT="5443"
-    SERVER_SSL_ENABLED="false"
+    SERVER_PORT=5443
+    SERVER_SSL_ENABLED=false
   teleop-server.yaml: |
     map:
       name: "teleoperation"
