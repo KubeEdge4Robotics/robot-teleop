@@ -29,7 +29,10 @@ spec:
       containers:
         - env:
             - name: REDIS_PASSWORD
-              value: KubeEdgeSecret
+              valueFrom:
+                secretKeyRef:
+                  name: sys-secret
+                  key: PASSWORD
             - name: REDIS_BINDING
               value: 0.0.0.0
           image: openvidu/openvidu-redis:master
@@ -151,15 +154,44 @@ spec:
       - name: rtc-server
         image: openvidu/openvidu-server:master
         imagePullPolicy: IfNotPresent
-        args: ["/usr/local/bin/entrypoint.sh"]
+        args: ["echo OPENVIDU_SECRET=${OPENVIDU_SECRET} >> /.env;/usr/local/bin/entrypoint.sh"]
         ports:
         - containerPort: 5443
           name: rtc-server-port
+        env:
+          - name: COTURN_IP
+            value: coturn-svc.default.svc.cluster.local
+          - name: COTURN_PORT
+            value: 12345
+          - name: COTURN_REDIS_IP
+            value: redis-svc
+          - name: COTURN_REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: sys-secret
+                key: PASSWORD
+          - name: OPENVIDU_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: sys-secret
+                key: PASSWORD
         volumeMounts:
           - name: rtc-env
             mountPath: "/.env"
             subPath: ".env"
+            readOnly: false
+          - name: secret-volume
+            readOnly: true
+            mountPath: "/opt/openvidu/owncert"
       volumes:
+      - name: secret-volume
+          secret:
+            secretName: webrtc-server-secret
+            items:
+              - key: tls.crt
+                path: certificate.cert
+              - key: tls.key
+                  path: certificate.key
       - name: rtc-env
         configMap:
           name: teleop-config
@@ -179,7 +211,7 @@ spec:
   selector:
     app: rtc-server
   ports:
-    - port: 23456
+    - port: 8443
       protocol: TCP
       name: rtc-server-port
       targetPort: rtc-server-port

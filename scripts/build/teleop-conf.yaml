@@ -1,4 +1,67 @@
 apiVersion: v1
+kind: Secret
+metadata:
+  name: webrtc-server-secret
+type: kubernetes.io/tls
+data:
+  tls.crt: |
+    MIIDOzCCAiMCFFHTD7grHjDj1sE4puRWu1lpHeMhMA0GCSqGSIb3DQEBCwUAMFox
+    CzAJBgNVBAYTAkNOMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhJbnRl
+    cm5ldCBXaWRnaXRzIFB0eSBMdGQxEzARBgNVBAMMCnJ0Yy1zZXJ2ZXIwHhcNMjMw
+    MjEzMDczMDQ1WhcNMzMwMjEwMDczMDQ1WjBaMQswCQYDVQQGEwJDTjETMBEGA1UE
+    CAwKU29tZS1TdGF0ZTEhMB8GA1UECgwYSW50ZXJuZXQgV2lkZ2l0cyBQdHkgTHRk
+    MRMwEQYDVQQDDApydGMtc2VydmVyMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB
+    CgKCAQEArPtaiTYcDCa9GK8FauIuEsDXJeMKYV1z5BtuDjoOi9qlkrx2668UWIPO
+    +l6BXazhXe0U78iJXpBnopVK293vQvHl1qVQzWGdCj8LyxdWicZaj2S/KBc5xW0w
+    W7BfsJwsMINN2a6OfbCnhKML+psFMn2u1KduwsXtBCImqAmXsQtnjuKSeyAUZw8K
+    eejZ19h+NmORkqP55xnwGuMH5+JGjqifyD7vNKzqU+r7chr+cbnnBTKl7/vSoyEr
+    dlylh4+C31jBQqB8z0lUceSxrPgRbqEBHtLcHfHLODAN3dJwCK6tff9DOxhQ8r1y
+    Y8N2Nb/bl04cfGl/C2iVgIOYUOrWFwIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQCm
+    qOTn//8m2+AnIBPZ1Lae48Bd+pXOrAaAUCF+zVSl4OEaTHq87nnRZJFzXz28VlFb
+    bgqwXl1RofVQpaBbFXWQTK0hAmlkjsL+epwKBR7UTJbjyZh4oS53b3vdr5V9dHO9
+    8c1FvweRh44HPTQCZGaElF4acR6H3pfZd1SEYFGb2V39n79LiGYpODLCspRXTVPp
+    wxoiBY9wCoyQoNmy1PtjjbifrSlZ5HbDdEt3ASMVrbjg19SJBYd9sBttwyHQjW2d
+    Iw9VfO/u4H4oFAejZm+df3nHAVmn1e9ylsDSS2ZslMsoPSdG4j+1ICAdhO5MNu/b
+    eqNG3Pzy5WHZQUQ//BRw
+  tls.key: |
+    MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCs+1qJNhwMJr0Y
+    rwVq4i4SwNcl4wphXXPkG24OOg6L2qWSvHbrrxRYg876XoFdrOFd7RTvyIlekGei
+    lUrb3e9C8eXWpVDNYZ0KPwvLF1aJxlqPZL8oFznFbTBbsF+wnCwwg03Zro59sKeE
+    owv6mwUyfa7Up27Cxe0EIiaoCZexC2eO4pJ7IBRnDwp56NnX2H42Y5GSo/nnGfAa
+    4wfn4kaOqJ/IPu80rOpT6vtyGv5xuecFMqXv+9KjISt2XKWHj4LfWMFCoHzPSVRx
+    5LGs+BFuoQEe0twd8cs4MA3d0nAIrq19/0M7GFDyvXJjw3Y1v9uXThx8aX8LaJWA
+    g5hQ6tYXAgMBAAECggEABnxBpW+sdBJbYPTO5hkm9iZ8u/XQRLng9hTHAnJEPPxD
+    xUWyKG7ZEpzbk+a9tRipe93WjmKGAQpZr5z4keOImxU0eSabu3ptx8CQRhVcdfXn
+    S6hFIP+pjtOGn+OWxExWpfmGSJfBtms1HKIe1k7XZZZOiYnKkr85rL/Q2cEQ3FNx
+    thGdAWfnx4T2YVjbxSv/qFOBS8DbheinYCX0uVyxKx0Qh9GHlj7Lyd6CVXNxNNwB
+    AlQHt015X47MYJK46mlsfsmC0/rtsvLkX5oFLVMixvKpBvJf1JtWIIgftMXDkOdf
+    R+QU1BQzNyga4JxQlV51d3CUFhjyiWLLHjyl9xmyAQKBgQDL7WDplzv7z5g/cP/6
+    ck7u9DlAsY723smzwZqUCQttTdiK6NvP3QHb0ccD5OoA+V8vFZaKkxjiM2ixhCQN
+    EU/WxB/i/MoUB19vO2VPxgXuniPGynFt45lHQZhpRbA7EZNZiVwODxlqDBFBitwp
+    txsnSp8IVgqaJUBk1k+GhC0hQQKBgQDZJxbgwvLJR3IplieSgKZ+jfM2GEkubXPK
+    h44v0kPP6lmlqLq9iuhpGg3IPDtls+ZTVM91Jd1gDnxRs0WC5mBxxt3scEbowXyz
+    b2tMEmg30FbjoQy608KArkwl4jz+0AE0b1fQaiLkWpnLFcIB8qNsfvlFsSfHXpyQ
+    LvHSl9lJVwKBgEBZP2N2XW8wKpKaTavxtgag+g/392zfEDawuN5NnFV5YwMyR2po
+    CtYac/o+mbiE+Awbe81ubUOzhS2+zMFy3QagDI/LxNhdGzg2PdnWWrjZHeD0sKZE
+    U3GwuS8+1kVNXnm6ZlnpWdOkyy0rbB2dsevMGDLBM8dASfmHxsBjpPoBAoGAdBU7
+    W6ebVhIFa0nDmcOAPYLwkuhkppcIISpZziKe8ZSbm70ZJp4NI7Izz+iy7+k9pSpf
+    RIabUvArcRlefV1eDTR8ChrzLRXR7bIQL7hfUgbjjAfZ4D23akbCmjXY2XakTj1/
+    OgCi6mOsdy4IajYlOqid5K2RUDi5hTIzP5rBIz0CgYBsInSEK3AHEXg9nZVTo4Xz
+    TEhOiW8CpBtxTMwavMeDUqbflI2U+s/HR2NCOr1OCkyc0NT867fFK6ButvKy8dT1
+    4uQEoAD/S9e2uKrXX7Cu3EA8oAsi8BiqjG9qf2lQNOmArs2wL2c005smHOPD2Bqi
+    x3TkBmiRExVM2oAW04r47w==
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sys-secret
+type: Opaque
+data:
+  PASSWORD: S3ViZUVkZ2VTZWNyZXQK
+
+---
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: teleop-config
@@ -16,11 +79,11 @@ data:
     COTURN_IP=coturn-svc.default.svc.cluster.local
     COTURN_PORT=12345
     COTURN_REDIS_IP=redis-svc
-    COTURN_REDIS_PASSWORD=KubeEdgeSecret
     DOMAIN_OR_PUBLIC_IP=rtc-server
+    CERTIFICATE_TYPE=owncert
     HTTPS_PORT=443
     HTTP_PORT=80
-    KMS_URIS='["ws://kms.default:8888/kurento"]'
+    KMS_URIS=["ws://kms.default:8888/kurento"]
     OPENVIDU_CDR=false
     OPENVIDU_CDR_PATH=/opt/openvidu/cdr
     OPENVIDU_RECORDING=false
@@ -30,9 +93,8 @@ data:
     OPENVIDU_RECORDING_NOTIFICATION=publisher_moderator
     OPENVIDU_RECORDING_PATH=/opt/openvidu/recordings
     OPENVIDU_RECORDING_PUBLIC_ACCESS=false
-    OPENVIDU_SECRET=KubeEdgeSecret
     OPENVIDU_WEBHOOK=false
-    OPENVIDU_WEBHOOK_EVENTS='[sessionCreated,sessionDestroyed,participantJoined,participantLeft,webrtcConnectionCreated,webrtcConnectionDestroyed,recordingStatusChanged,filterEventDispatched,mediaNodeStatusChanged,nodeCrashed]'
+    OPENVIDU_WEBHOOK_EVENTS=[sessionCreated,sessionDestroyed,participantJoined,participantLeft,webrtcConnectionCreated,webrtcConnectionDestroyed,recordingStatusChanged,filterEventDispatched,mediaNodeStatusChanged,nodeCrashed]
     SERVER_PORT=5443
     SERVER_SSL_ENABLED=false
   teleop-server.yaml: |
