@@ -20,12 +20,12 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                  - key: node-role.kubernetes.io/cloud-telep
-                    operator: In
-                    values:
-                      - server
-                  - key: node-role.kubernetes.io/agent
-                    operator: Exists
+                - key: node-role.kubernetes.io/cloud-telep
+                  operator: In
+                  values:
+                    - server
+                - key: node-role.kubernetes.io/agent
+                  operator: Exists
       containers:
         - env:
             - name: REDIS_PASSWORD
@@ -154,15 +154,14 @@ spec:
       - name: rtc-server
         image: openvidu/openvidu-server:master
         imagePullPolicy: IfNotPresent
-        args: ["echo OPENVIDU_SECRET=${OPENVIDU_SECRET} >> /.env;/usr/local/bin/entrypoint.sh"]
+        command: ["bash", "-i"]
+        args: ["/usr/local/bin/run.sh"]
         ports:
         - containerPort: 5443
           name: rtc-server-port
         env:
           - name: COTURN_IP
-            value: coturn-svc.default.svc.cluster.local
-          - name: COTURN_PORT
-            value: 12345
+            value: "coturn-svc.default.svc.cluster.local"
           - name: COTURN_REDIS_IP
             value: redis-svc
           - name: COTURN_REDIS_PASSWORD
@@ -177,27 +176,35 @@ spec:
                 key: PASSWORD
         volumeMounts:
           - name: rtc-env
-            mountPath: "/.env"
-            subPath: ".env"
-            readOnly: false
+            mountPath: "/.env-tpl"
+            subPath: ".env-tpl"
+          - name: rtc-entrypoint
+            mountPath: "/usr/local/bin/run.sh"
+            subPath: "run.sh"
           - name: secret-volume
             readOnly: true
             mountPath: "/opt/openvidu/owncert"
       volumes:
       - name: secret-volume
-          secret:
-            secretName: webrtc-server-secret
-            items:
-              - key: tls.crt
-                path: certificate.cert
-              - key: tls.key
-                  path: certificate.key
+        secret:
+          secretName: webrtc-server-secret
+          items:
+            - key: tls.crt
+              path: certificate.cert
+            - key: tls.key
+              path: certificate.key
+      - name: rtc-entrypoint
+        configMap:
+          name: teleop-config
+          items:
+            - key: "teleop-server.entrypoint"
+              path: "run.sh"
       - name: rtc-env
         configMap:
           name: teleop-config
           items:
             - key: "teleop-server.env"
-              path: ".env"
+              path: ".env-tpl"
 
 ---
 apiVersion: v1

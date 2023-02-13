@@ -37,7 +37,7 @@ spec:
         - name: SERVER_URL
           value: "https://rtc-server:8443/openvidu"
         - name: REQUESTS_CA_BUNDLE
-          value: "/etc/ssl/certs/certificate.cert"
+          value: "/etc/ssl/certs/certificate.pem"
         resources:  # user defined resources
           requests:
             memory: 64M
@@ -65,8 +65,8 @@ spec:
           path: /share/robosdk/logs
           type: Directory
       - name: secret-volume
-          secret:
-            secretName: webrtc-server-secret
-            items:
-              - key: tls.crt
-                path: certificate.cert
+        secret:
+          secretName: webrtc-server-secret
+          items:
+            - key: tls.crt
+              path: certificate.pem
