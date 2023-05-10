@@ -1,0 +1,170 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sys-secret
+type: Opaque
+data:
+  AUTHTOKEN:
+  USERNAME:
+  PASSWORD:
+  DOMAIN:
+  PROJECT_ID:
+  AUTH_DOMAIN:
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: webrtc-server-secret
+type: kubernetes.io/tls
+data:
+  tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURFVENDQWZrQ0ZCdFE1M2tPTTlqS2hwYUxmb2U4S1hnZDVTOGxNQTBHQ1NxR1NJYjNEUUVCQ3dVQU1FVXgKQ3pBSkJnTlZCQVlUQWtGVk1STXdFUVlEVlFRSURBcFRiMjFsTFZOMFlYUmxNU0V3SHdZRFZRUUtEQmhKYm5SbApjbTVsZENCWGFXUm5hWFJ6SUZCMGVTQk1kR1F3SGhjTk1qTXdNekkzTVRFME16SXdXaGNOTWpRd016STJNVEUwCk16SXdXakJGTVFzd0NRWURWUVFHRXdKQlZURVRNQkVHQTFVRUNBd0tVMjl0WlMxVGRHRjBaVEVoTUI4R0ExVUUKQ2d3WVNXNTBaWEp1WlhRZ1YybGtaMmwwY3lCUWRIa2dUSFJrTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQwpBUThBTUlJQkNnS0NBUUVBN0IzRmlyUmZna0VOTHIxb1IzQllEaHEzMWJ4WjgzN0t4RGNwcTdweHh3S2R5VTBNCk9KK2hHNnc3RTU4Z2Y0MTh3RUl6Uko0ZjduNjN4NHNDdkNGNkdRVDhNTHlCWjh6SG55NExHQWovYzFJdEFsQ1kKSk9TQW44TmlsR25vQ0ZBQXd5YXJ2VzU0eVpOS0x2S3RIYnZjdmx4V1lMQ0NmVG9rMEhxaWZwL2RFVmpKaGcvSQpaYTc5TGUwZDdMOStIWWxIbGdMSlFCSHJsNzlJd0N0TEFvNWlJTDNZd2FnSVhUWnhtQW9SQlBrV1ZKb3A1WXNvCnZWaFJ1dDNCeWVlemRQZDlTMmsvKytDYUZlQVpSdlJTajJlRjY5amUrVDZkeVRsWmowSXhUZ2l4aU5XUkFIdlMKWVRjZXRPSmR4U3F1ckMwYlFoNmZmSEZBL2ltREtOVlJmZ0p4V1FJREFRQUJNQTBHQ1NxR1NJYjNEUUVCQ3dVQQpBNElCQVFDTmhHOUJ2R2ZoNHJPN08vQTNBbUplc2ltTHRjQ214c0trZ09kYUJ0Y1ZXa2dtZ1RVNVJzZ2xmWFJECkRpdzRFc0c3Z2xGTlpVK2Zwd0I3c0pyakNrTTdpOVJ2S2Qvand4cEQ5RU93SUJQa1kzbkhtb3NBTE1GVXZzSXMKVmUvSHFUNS82S3pMc0ppZmpLNkxiRG5EbjRuRnVQVG9hT2JldG1IbU5rVkZCcGk2TURFRm1kQ0Y4K2lBeEwxVwpoMWpFTkpVWldWTXQ0alg5MXh5THhJdTI0M09uNWg5RnJvM01TREdLTE51T1R2MmhQMTRIbWQwYVRQRUxzWTFIClFVM1RNZFFJYWowK1dvSjc5a1BsMUhsZmNOQjROR0pWSXNkdlcyRzJUSXZVcEF3VGdYSEtrWjZWMUE2c0pjSDkKc05JaDMzajVoUXdmUlYvckdnejFZLzNELzRmKwotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+  tls.key: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFcEFJQkFBS0NBUUVBN0IzRmlyUmZna0VOTHIxb1IzQllEaHEzMWJ4WjgzN0t4RGNwcTdweHh3S2R5VTBNCk9KK2hHNnc3RTU4Z2Y0MTh3RUl6Uko0ZjduNjN4NHNDdkNGNkdRVDhNTHlCWjh6SG55NExHQWovYzFJdEFsQ1kKSk9TQW44TmlsR25vQ0ZBQXd5YXJ2VzU0eVpOS0x2S3RIYnZjdmx4V1lMQ0NmVG9rMEhxaWZwL2RFVmpKaGcvSQpaYTc5TGUwZDdMOStIWWxIbGdMSlFCSHJsNzlJd0N0TEFvNWlJTDNZd2FnSVhUWnhtQW9SQlBrV1ZKb3A1WXNvCnZWaFJ1dDNCeWVlemRQZDlTMmsvKytDYUZlQVpSdlJTajJlRjY5amUrVDZkeVRsWmowSXhUZ2l4aU5XUkFIdlMKWVRjZXRPSmR4U3F1ckMwYlFoNmZmSEZBL2ltREtOVlJmZ0p4V1FJREFRQUJBb0lCQUdJNEtEcUF1ZEkzT1VLZQpLOGk3NVFWSSsvdi9NL1BrWkhpbThjQ3IrRFJ1MURBdXlzeXJLcHVXVTZUZjV1Ym9kbUtMcDBQOSt3NTh5L3BICnkwVnpMNVZFeTV1Q2J0bzlCelVpTkI4MWJ2NEx5d2xSZVZpdmJRb0lmdk41OHJteWZmNndFWFRsaFgxa3RkRTkKeGVHK2loN3R6a2krWkNtdmpDemxOcjh4eFFZM2VtQ1E2c3pXeEVhZVE3L3hUcGRraVJNdzVpR0w3MCtHcnJYTwpONS9RV0JXZVpjVDVtandjMGxKbzRLNW1WNGhiMVYxQVNkT0NoQXc5U0V0eTZ6aGhyVERweFVyZmEvYTV0eE1jCm5QVDVJYkVlZGhtYVJYK3RXbnB3Z0NyWWJiTFpHSE81eHloMDZrUGR0d0ZFRU81Sk5CRTVremxHeXJoT0pUa0kKZURCVVBya0NnWUVBOTA4TWZHWWZPNlFRVVo0Y1lyM3FmTkMxOWx5WkJQdnJrenIwZHZnL3pqK1hUbS9GYmNGNApuYy9jbzJlSm5MNklQKzRlMkRLVmQ2ZGJhbzMrck93TWNLaGo4b1ZLRWd4V1VpRzMzV3JYVk41Y3Mzd1YrUkdVCk5lRWhieGI4amVDeHVTR2ZhNE92ME1wVXRxaWxydlY2anFRU1NQRVBxRnFreGtzVm93Ujg2SnNDZ1lFQTlHb0gKSnlKUFdMRUl0RFdtRzFraFhycFFTU3BVMEtQcjZrb2ozWGZIc2dxcmtlVDJnQWxNWG0ydVFQRkRVbldhbytLcwpkWjM0ZVpleHMySlh6b1M5akRWdEdna2J4ZE1PNzJLQWRrRTR4NmNsdjVNRUdzWUJHMnNxWG1JREdjUWlkY1ZwCk1VenZZVjJmZkgwZUZDVE92RjlxK0V0NFpXVUc1SUJSUzdmWnl4c0NnWUVBbmgvRjNQZ3l1aUNCYXA0TWlqbmgKNXVKUHBmQzR5ZzRGSnNNSU1kVXlmcjM4RVdPM3VTQjk3WEZOSXBGOTFHR2luald6TlFyS3RKR21DckExaVB6NApTMFB2ZTg0cmVQUzRjSlVzaVg3WnBXTHpwTE1QSFl4VzFraFc1eitzUlU3SWM1V0M1K3h3Q3JDRGo3S3ZGUG5SCjNjZ2NCTlZVN0pEZ1VBVU1GWW8yRDBjQ2dZQnAxekJaeGdYT1JudWFibEVNTHNEQW9MWDd1UlVaZEtMSXhtcFoKa1hFc3JHbzN0NHIzVHc5L0pNZjgzMzFqekFHM1RvV1lPVnhNYTJCTWFoM1VGSzl3ZEFKVzcvTFM2OTdmMHl3RwpDYUJvOVB6bnhPWldJY0NBK3h0UjIrZXoxTGVIZ0lGWkZCUGxlZ0dDaXp2blJUa3hZYkNVN1RtcHp1SDVPWWY2CjNoYTJXUUtCZ1FEUE4wZTFoUW5Bc3ZSZlJaV0hqVGozMFBPZW5DcFovNjA4TjNQWHJreGE2OXZRdFRVT2JiZk4KM1MycEh0RmRMMnhkOEZIb1BNR29ZVFFOMlJmRW03TmZkMHpFbGRac3MzQ0tHcUlnanpBcTFUUCtYVktzdG1aTQp1YVBibTFUSjJPdENLRUhKREJMMXdHdmM1NEFvZGxNQkR5Z2UyZVZLVUdSVUgyVXJRa3FPc3c9PQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: teleop-config-arm
+  namespace: default
+data:
+  teleop-ice-servers.json: |
+    {
+      "urls": "stun:xxx.xxx.xxx.xxx:30487"
+    }
+  teleop-ice-server.conf: |
+    no-tls
+    no-dtls
+    verbose
+    no-auth
+    listening-port=30487
+    min-port=31760
+    max-port=31769
+    external-ip=::1/::1
+  teleop-user-custom.yaml: |
+    task_id: "teleoperation"
+    rtc_signature_expire_time: 7200
+    deploy_apps:
+      - name: "robo-teleop-robot"
+        run_env:
+          - name: ROS_MASTER_URI
+            value: "http://localhost:11311"
+          - name: CFG_PATH
+            value: "/share/robosdk/configs"
+          - name: LOG_DIR
+            value: "/share/logs"
+          - name: RTC_ICE_SERVER
+            value: "/share/teleop/teleop-ice-servers.json"
+          - name: LOG_LEVEL
+            value: "DEBUG"
+        package_url: "swr.cn-south-1.myhuaweicloud.com/robo/robot-teleop-robot:0.0.1"
+        app_type: "robot"
+        run_args: ["-i", "/share/teleop/run.sh"]
+        volumes:
+          - name: robotentrypoint
+            type: configMap
+            source: teleop-config
+            destination: "/share/teleop"
+            data: 
+               run.sh: |
+                  #!/bin/sh
+                  set -euo pipefail
+                  
+                  source "/opt/ros/$ROS_DISTRO/setup.bash"
+                  python3 /code/main/main.py
+                  
+                  exit 0
+               teleop-ice-servers.json: |
+                  {
+                    "urls": "stun:xxx.xxx.xxx.xxx:30487"
+                  }
+          - name: robotconfig
+            type: configMap
+            source: teleop-config
+            destination: "/share/robosdk/configs/robots"
+            data: 
+                teleop.yaml: |
+                  name: "teleop"
+                  manufacturer: "teleop"
+                  series: ""
+                  description: ""
+                  environment:
+                    backend: "ros1"  # ros1 / ros2 / harmony
+                    requirement:
+                      - rospy
+                      - rostopic
+                      - roslib
+                  sensors:
+                    battery:
+                      - name: "battery"
+                        config: "simplebattery"
+                        data:
+                          target: "/battery_level"
+                          actual_hz: 1
+                          origin_hz: 10
+                  control:
+                    - motion:
+                        name: "ros_cmd_vel"
+                        config: "cmd_vel"
+                    - legged:
+                        name: "ysc_control"  # control method supported by vendor
+                        config: "x20control"
+          - name: logdir
+            type: hostPath
+            source: "/tmp"
+            destination: "/share/logs"
+        resources:
+          limits:
+            cpu: "1"
+            memory: "1024"
+          requests:
+            cpu: "1"
+            memory: "1024"
+
+---
+# robot-def-config
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: robot-def-config
+  namespace: default
+data:
+  event.json: |
+    [
+       {"name": "sparkrtc", "package": "server.apis.extenal"}
+    ]
+  skill.json: |
+    {
+      "quadruped_robot": [
+            {
+              "skill_id": "5d01100a-94d0-4b51-81b3-b9677e80c0df",
+              "skill_name": "capture_photo",
+              "parameters": {"output": "/share/data/capture.png"}
+            },
+            {
+              "skill_id": "a1d74be4-5453-49fb-bad8-40d93d3d8bc8",
+              "skill_name": "dance",
+              "description": "make robot dance"
+            }
+        ]
+    }
+  property.json: |
+    {
+      "quadruped_robot": {
+        "camera_front_up": {
+          "camera_name": "Front UP",
+          "camera_type": "realsense",
+          "camera_url": "/camera_front_up/color/image_raw",
+          "camera_status": "connect"
+        },
+        "camera_front_down": {},
+        "pcl": {
+          "status": "connect",
+          "pcl_url": "/camera_front_up/pcl"
+        },
+        "audio": {
+          "status": "disconnect"
+        }
+      }
+    }

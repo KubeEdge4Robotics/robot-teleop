@@ -1,0 +1,8 @@
+@misc{RoboSDK_KubeEdge
+title = {RoboSDK: An Open Source SDK for Robotics},
+author = {},
+year = {2022},
+publisher = {GitHub},
+journal = {GitHub repository},
+url = {https://github.com/kubeedge/robosdk}
+}
