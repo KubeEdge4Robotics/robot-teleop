@@ -211,6 +211,9 @@ class SignalGatewayAPI(ServiceBase):  # noqa
             on_startup=[self._on_startup],
             on_shutdown=[self._on_shutdown],
             routes=rounters,
+            openapi_url=None,
+            docs_url=None,
+            redoc_url=None
         )
 
         self.app.add_middleware(
