@@ -87,9 +87,11 @@ export default {
   data() {
     return {
       robotList: [],
+      curUrl:'',
     };
   },
   created() {
+    process.env.NODE_ENV === 'development' ? this.curUrl = '' : this.curUrl = process.env.VUE_APP_api_url;
     this.fetchRobotList();
   },
   methods: {
@@ -98,7 +100,7 @@ export default {
     },
     // 获取服务列表桥接器
     fetchRobotList() {
-      axios.get("/v1/robot").then((res) => {
+      axios.get(`${this.curUrl}/v1/robot`).then((res) => {
         this.robotList = res.data.robots;
       });
     },
