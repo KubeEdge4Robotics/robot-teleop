@@ -25,23 +25,98 @@
     <div class="video_box">
       <div class="picture-list">
         <div>
-          <div class="picture-item-title">视角1</div>
-          <div class="picture-item-main" id="pictureOne"></div>
+          <div class="picture-item-title">
+            <el-dropdown>
+              <span class="el-dropdown-link">
+                {{ videoNames.videoName1 || "选择视频流"
+                }}<i class="el-icon-arrow-down el-icon--right"></i>
+              </span>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item
+                  v-for="(item, index) in cameras"
+                  @click.native="
+                    changeCamera(item, 'cameraOne', videoNames.videoName1)
+                  "
+                  :key="index"
+                  :command="item"
+                  >{{ item }}</el-dropdown-item
+                >
+              </el-dropdown-menu>
+            </el-dropdown>
+          </div>
+          <div class="picture-item-main" id="cameraOne"></div>
         </div>
         <div>
-          <div class="picture-item-title">视角2</div>
-          <div class="picture-item-main" id="pictureTwo"></div>
+          <div class="picture-item-title">
+            <el-dropdown>
+              <span class="el-dropdown-link">
+                {{ videoNames.videoName2 || "选择视频流"
+                }}<i class="el-icon-arrow-down el-icon--right"></i>
+              </span>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item
+                  v-for="(item, index) in cameras"
+                  @click.native="
+                    changeCamera(item, 'cameraTwo', videoNames.videoName2)
+                  "
+                  :key="index"
+                  :command="item"
+                  >{{ item }}</el-dropdown-item
+                >
+              </el-dropdown-menu>
+            </el-dropdown>
+          </div>
+          <div class="picture-item-main" id="cameraTwo"></div>
         </div>
         <div>
-          <div class="picture-item-title">视角3</div>
-          <div class="picture-item-main" id="pictureThree"></div>
+          <div class="picture-item-title">
+            <el-dropdown>
+              <span class="el-dropdown-link">
+                {{ videoNames.videoName3 || "选择视频流"
+                }}<i class="el-icon-arrow-down el-icon--right"></i>
+              </span>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item
+                  v-for="(item, index) in cameras"
+                  @click.native="
+                    changeCamera(item, 'cameraThree', videoNames.videoName3)
+                  "
+                  :key="index"
+                  :command="item"
+                  >{{ item }}</el-dropdown-item
+                >
+              </el-dropdown-menu>
+            </el-dropdown>
+          </div>
+          <div class="picture-item-main" id="cameraThree"></div>
         </div>
       </div>
-      <div
-        id="vid"
-        ref="mainVideoBox"
-        :class="{ robotBgcGrey: selectedCamera.length === 0 }"
-      ></div>
+      <div class="picture-item-main">
+        <div class="picture-item-title">
+          <el-dropdown>
+            <span class="el-dropdown-link">
+              {{ videoNames.videoName4 || "选择视频流"
+              }}<i class="el-icon-arrow-down el-icon--right"></i>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item
+                v-for="(item, index) in cameras"
+                @click.native="
+                  changeCamera(item, 'cameraMain', videoNames.videoName4)
+                "
+                :key="index"
+                :command="item"
+                >{{ item }}</el-dropdown-item
+              >
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div>
+        <div
+          id="cameraMain"
+          ref="mainVideoBox"
+          :class="{ robotBgcGrey: selectedCamera.length === 0 }"
+        ></div>
+      </div>
     </div>
   </div>
 </template>
@@ -67,7 +142,24 @@ export default {
       client: null,
       cameras: [],
       clients: {},
-      videoItem: ["b77ca3bde3ad507b576d7d5293aa1c99", "b77ca3bde3ad507b576d7d5293aa1c90", "b77ca3bde3ad507b576d7d5293aa1c91", "b77ca3bde3ad507b576d7d5293aa1c98"],
+      num: 1,
+      videoItem: [],
+      camerasList: {
+        oneStream: "",
+        twoStream: "",
+        threeStream: "",
+        mainStream: "",
+      },
+      mainStream: null,
+      oneStream: null,
+      twoStream: null,
+      threeStream: null,
+      videoNames: {
+        videoName1: "",
+        videoName2: "",
+        videoName3: "",
+        videoName4: "",
+      },
     };
   },
   created() {
@@ -158,28 +250,45 @@ export default {
         });
         this.client.on("stream-subscribed", (event) => {
           const stream = event.stream;
-          console.log(stream);
-          if (stream.userId_ == "b77ca3bde3ad507b576d7d5293aa1c99") {
-            stream.play("pictureOne", {
-              objectFit: "cover",
-              muted: true,
-            });
-          } else if (stream.userId_ == "b77ca3bde3ad507b576d7d5293aa1c90") {
-            stream.play("pictureTwo", {
-              objectFit: "cover",
-              muted: true,
-            });
-          } else if (stream.userId_ == "b77ca3bde3ad507b576d7d5293aa1c91") {
-            stream.play("pictureThree", {
-              objectFit: "cover",
-              muted: true,
-            });
-          } else if (stream.userId_ == "b77ca3bde3ad507b576d7d5293aa1c98") {
-            stream.play("vid", {
+          this.videoItem.push(stream.userId_);
+          if (this.num == 1) {
+            this.mainStream = stream;
+            this.camerasList.mainStream = stream.userId_;
+            this.videoNames.videoName4 = stream.userId_;
+            this.mainStream.play("cameraMain", {
               objectFit: "cover",
               muted: true,
             });
           }
+          if (this.num == 2) {
+            this.oneStream = stream;
+            this.camerasList.oneStream = stream.userId_;
+            this.videoNames.videoName1 = stream.userId_;
+            this.oneStream = stream;
+            stream.play("cameraOne", {
+              objectFit: "cover",
+              muted: true,
+            });
+          }
+          if (this.num == 3) {
+            this.twoStream = stream;
+            this.camerasList.twoStream = stream.userId_;
+            this.videoNames.videoName2 = stream.userId_;
+            stream.play("cameraTwo", {
+              objectFit: "cover",
+              muted: true,
+            });
+          }
+          if (this.num == 4) {
+            this.threeStream = stream;
+            this.camerasList.threeStream = stream.userId_;
+            this.videoNames.videoName3 = stream.userId_;
+            stream.play("cameraThree", {
+              objectFit: "cover",
+              muted: true,
+            });
+          }
+          this.num++;
         });
         this.client.on("stream-updated", (event) => {
           console.log("远端流updated", event);
@@ -221,6 +330,67 @@ export default {
           clearTimeout(timer);
         }, 2000);
       });
+    },
+    changeCamera(command, boxId, videoId) {
+      var dom = document.getElementById(boxId);
+      var existingInnerDiv = dom.querySelector("div");
+      if (existingInnerDiv) {
+        dom.removeChild(existingInnerDiv);
+      }
+      for (var key in this.videoNames) {
+        if (this.videoNames[key] == command) {
+          this.videoNames[key] = "";
+        }
+      }
+      if (boxId == "cameraOne") {
+        this.videoNames.videoName1 = command;
+      } else if (boxId == "cameraTwo") {
+        this.videoNames.videoName2 = command;
+      } else if (boxId == "cameraThree") {
+        this.videoNames.videoName3 = command;
+      } else if (boxId == "cameraMain") {
+        this.videoNames.videoName4 = command;
+      }
+      for (var key in this.camerasList) {
+        if (this.camerasList[key] == videoId) {
+          if (key == "oneStream") {
+            this.oneStream?.stop();
+          } else if (key == "twoStream") {
+            this.twoStream?.stop();
+          } else if (key == "threeStream") {
+            this.threeStream?.stop();
+          } else if (key == "mainStream") {
+            this.mainStream?.stop();
+          }
+        }
+        if (this.camerasList[key] == command) {
+          if (key == "oneStream") {
+            this.oneStream.stop();
+            this.oneStream.play(boxId, {
+              objectFit: "cover",
+              muted: true,
+            });
+          } else if (key == "twoStream") {
+            this.twoStream.stop();
+            this.twoStream.play(boxId, {
+              objectFit: "cover",
+              muted: true,
+            });
+          } else if (key == "threeStream") {
+            this.threeStream.stop();
+            this.threeStream.play(boxId, {
+              objectFit: "cover",
+              muted: true,
+            });
+          } else if (key == "mainStream") {
+            this.mainStream.stop();
+            this.mainStream.play(boxId, {
+              objectFit: "cover",
+              muted: true,
+            });
+          }
+        }
+      }
     },
   },
 };
@@ -337,10 +507,9 @@ export default {
   background-color: #ccc;
 }
 
-#vid {
+#cameraMain {
   position: relative;
   flex: 1;
-  /* width:100%;  */
   height: 100%;
   border-radius: 4px;
   background-color: #000000;
@@ -388,6 +557,8 @@ export default {
 .picture-item-main {
   flex: 1;
   z-index: 999;
+  border-radius: 4px;
+  overflow: hidden;
 }
 
 .robotBgcGrey {
