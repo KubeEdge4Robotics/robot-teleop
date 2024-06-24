@@ -15,6 +15,7 @@
 import time
 import asyncio
 import traceback
+import yaml
 from enum import Enum
 from typing import List
 from typing import Dict
@@ -92,13 +93,13 @@ class CloudRTCProxy(CloudAPIProxy):
         self._app_lock = asyncio.Lock()
         super(CloudRTCProxy, self).__init__(config, resource)
 
-    def update_token(self, token: str = "", project_id: str = ""):
+    def update_token(self, token: str = "", project_id: str = "", rtc_token: str = "", rtc_project_id: str = ""):
         """ update token """
-        if token:
-            self._token = token.strip()
+        if rtc_token:
+            self._token = rtc_token.strip()
             self._ext_header["X-Auth-Token"] = self._token
-        if project_id:
-            self._project_id = project_id.strip()
+        if rtc_project_id:
+            self._project_id = rtc_project_id.strip()
 
     def __str__(self):
         return f"{self._resource}.RTC"
@@ -273,9 +274,9 @@ class CloudRTC(AsyncIOEventEmitter):
         self._rtc = CloudRTCProxy(config=self._config)
         self.logger.debug("CloudRTC init success")
 
-        if hasattr(getattr(server, '_cloud_api', None), "register_event"):
+        if hasattr(getattr(server, '_cloud_api', None), "register_rtc_event"):
             try:
-                server._cloud_api.register_event(self._rtc)  # noqa
+                server._cloud_api.register_rtc_event(self._rtc)  # noqa
                 self.logger.debug("CloudRTC register event success")
             except:  # noqa
                 pass
@@ -338,90 +339,111 @@ class CloudRTC(AsyncIOEventEmitter):
         setattr(service, "sparkrtc", rtc)
         self._app_env[robot.robot_id]["rtc"] = rtc
         self.logger.debug(f"CloudRTC app {rtc} create")
-
+    
     async def on_app_deploy(self, app: AppModel, robot: RobotModel, **kwargs):
         self.logger.debug(f"CloudRTC app {app} deploy")
-        if robot.robot_id in self._app_env and app.app_type == "sparkrtc":
-            if not (app.run_env and isinstance(app.run_env, dict)):
-                app.run_env = {}
+        if not (robot.robot_id in self._app_env and app.app_type == "sparkrtc"):
+            return
+        if not (app.run_env and isinstance(app.run_env, dict)):
+            app.run_env = {}
 
-            mode = app.run_env.get("mode", "p2p")  # p2p / mutil
-            token: str = gen_token()
-            rtc: RTCModel = self._app_env[robot.robot_id]["rtc"]
-            expire_time = ""
-            if mode == "mutil":
-                agent_num = int(app.run_env.get("agent_num", 1))
-                stream = {}
-                for i in range(agent_num):
-                    client_id = app.run_env.get(f"stream_{i}_id", "")
-                    client_name = (app.run_env.get(f"stream_{i}_name", "")
-                                   or f"{robot.robot_name}_{i}")
-
-                    if not client_id:
-                        ros_topic = app.run_env.get(
-                            f"stream_{i}_ros_topic", "/camera/color/image_raw"
-                        )
-                        client_id = genearteMD5(ros_topic)
-                    if client_id in rtc.clients:
-                        client_id = f"{client_id}_{token}"
-                        client_name = f"{client_name}_{token}"
-                    client = self._add_single_client(
-                        robot=robot,
-                        client_id=client_id,
-                        client_name=client_name,
-                    )
-                    stream[client_id] = {
-                        "stream_id": client_id,
-                        "stream_name": client_name,
-                        "signature": client.signature,
-                        "rtc_ctime": client.expire_time
-                    }
-                    expire_time = client.expire_time
-                run_env = {
-                    "device_id": rtc.room_id,
-                    "rtc_app_id": rtc.app_id,
-                    "stream": stream,
-                    "rtc_app_key": rtc.app_key,
-                    "rtc_domain": rtc.domain,
-                    "rtc_ctime": expire_time
-                }
-            else:
-                if "stream_id" in app.run_env:
-                    client_id = app.run_env["stream_id"]
-                else:
-                    client_id = kwargs.get("client_id", "")
+        mode = app.run_env.get("mode", "p2p")  # p2p / mutil
+        token: str = gen_token()
+        rtc: RTCModel = self._app_env[robot.robot_id]["rtc"]
+        expire_time = ""
+        if mode == "mutil":
+            agent_num = int(app.run_env.get("agent_num", 1))
+            stream = []
+            for i in range(agent_num):
+                client_id = app.run_env.get(f"stream_{i}_id", "")
+                client_name = (app.run_env.get(f"stream_{i}_name", "")
+                               or f"{robot.robot_name}_{i}")
+                ros_topic = app.run_env.get(
+                    f"stream_{i}_ros_topic", "/camera/color/image_raw"
+                )
                 if not client_id:
-                    client_id = genearteMD5(
-                        app.run_env.get(
-                            "ros_image_topic", "/camera/color/image_raw"
-                        )
-                    )
-
-                if "stream_name" in app.run_env:
-                    client_name = app.run_env["stream_name"]
-                else:
-                    client_name = (
-                            kwargs.get("client_name", "") or robot.robot_name
-                    )
+                    client_id = genearteMD5(ros_topic)
                 if client_id in rtc.clients:
                     client_id = f"{client_id}_{token}"
                     client_name = f"{client_name}_{token}"
-
                 client = self._add_single_client(
                     robot=robot,
                     client_id=client_id,
                     client_name=client_name,
                 )
-                run_env = {
-                    "device_id": rtc.room_id,
-                    "rtc_app_id": rtc.app_id,
-                    "stream_id": client_id,
-                    "stream_name": client_name,
-                    "signature": client.signature,
-                    "rtc_app_key": rtc.app_key,
-                    "rtc_domain": rtc.domain,
-                    "rtc_ctime": client.expire_time
+                stream.append(
+                    {
+                        "stream_id": client_id,
+                        "stream_name": client_name,
+                        "ros_image_topic": ros_topic,
+                        "signature": client.signature,
+                        "rtc_ctime": client.expire_time,
+                        "client_type": "robot"
+                    }
+                )
+                expire_time = client.expire_time
+            run_env = {
+                "device_id": rtc.room_id,
+                "app_id": rtc.app_id,
+                "app_key": rtc.app_key,
+                "domain": rtc.domain,
+                "ctime": expire_time,
+                "streams": stream,
+            }
+            if not app.volumes:
+                app.volumes = []
+            app.volumes = list(
+                filter(lambda x: x["name"] != "sparkrtconf", app.volumes)
+            )
+            app.volumes.append(
+                {
+                    "name": "sparkrtconf",
+                    "type": "configMap",
+                    "source": "sparkrtc-config",
+                    "destination": "/home/cameraagent/share/robocamera_agent/config",  # noqa
+                    "data": {
+                        "config.yaml": yaml.dump(run_env)
+                    }
                 }
+            )
+
+        else:
+            if "stream_id" in app.run_env:
+                client_id = app.run_env["stream_id"]
+            else:
+                client_id = kwargs.get("client_id", "")
+            if not client_id:
+                client_id = genearteMD5(
+                    app.run_env.get(
+                        "ros_image_topic", "/camera/color/image_raw"
+                    )
+                )
+
+            if "stream_name" in app.run_env:
+                client_name = app.run_env["stream_name"]
+            else:
+                client_name = (
+                        kwargs.get("client_name", "") or robot.robot_name
+                )
+            if client_id in rtc.clients:
+                client_id = f"{client_id}_{token}"
+                client_name = f"{client_name}_{token}"
+
+            client = self._add_single_client(
+                robot=robot,
+                client_id=client_id,
+                client_name=client_name,
+            )
+            run_env = {
+                "device_id": rtc.room_id,
+                "rtc_app_id": rtc.app_id,
+                "stream_id": client_id,
+                "stream_name": client_name,
+                "signature": client.signature,
+                "rtc_app_key": rtc.app_key,
+                "rtc_domain": rtc.domain,
+                "rtc_ctime": client.expire_time
+            }
             app.run_env.update(run_env)
 
     def _add_single_client(self, robot: RobotModel, client_id: str, client_name: str):
