@@ -1,0 +1,19 @@
+worker_processes auto;
+
+events {
+    worker_connections 1024;
+}
+http {
+    include mime.types;
+    server {
+        listen       80;
+        location / {
+            root /usr/share/nginx/html/;
+            index index.html;
+            try_files $uri $uri/ /index.html;
+        }
+        location /v1/ {
+            proxy_pass $SERVER_ENDPOINT;
+        }
+    }
+}

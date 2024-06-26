@@ -66,7 +66,7 @@ class CloudAPIProxy:
     async def run(self):
         raise NotImplementedError
 
-    def update_token(self, token: str = "", project_id: str = ""):
+    def update_token(self, token: str = "", project_id: str = "", rtc_token: str = "", rtc_project_id: str = ""):
         raise NotImplementedError
 
     async def close(self):
@@ -85,6 +85,7 @@ class CloudAuthProxy(CloudAPIProxy):
         self.__token_expires__ = None
         self.__token_lock__ = asyncio.Lock()
         self._all_registry_event: List[CloudAPIProxy] = []
+        self._rtc_registry_event: CloudAPIProxy = None
         super(CloudAuthProxy, self).__init__(config, resource)
 
     def __str__(self):
@@ -93,6 +94,9 @@ class CloudAuthProxy(CloudAPIProxy):
     def register_event(self, event: CloudAPIProxy):
         self._all_registry_event.append(event)
 
+    def register_rtc_event(self, event: CloudAPIProxy):
+        self._rtc_registry_event = event
+
     def update_event_token(self):
         for event in self._all_registry_event:
             self.logger.debug(f"Update event token: {event}")
@@ -100,8 +104,13 @@ class CloudAuthProxy(CloudAPIProxy):
                 token=self.__token__,
                 project_id=self.__project_id__
             )
+        self.logger.debug(f"Update rtc event token: {event}")
+        self._rtc_registry_event.update_token(
+            rtc_token=self.__rtc_token__,
+            rtc_project_id=self.__rtc_project_id__
+        )
 
-    def update_token(self, token: str = "", project_id: str = ""):
+    def update_token(self, token: str = "", project_id: str = "", rtc_token: str = "", rtc_project_id: str = ""):
         """ not recommend to use this method, use _update_token instead """
         if token:
             self.__token__ = token
@@ -111,9 +120,21 @@ class CloudAuthProxy(CloudAPIProxy):
         if project_id:
             self.__project_id__ = project_id
 
+        if rtc_token:
+            self.__rtc_token__ = rtc_token
+            self.__rtc_token_expires__ = datetime.utcnow() + timedelta(
+                seconds=self.__update_token_period__)
+
+        if rtc_project_id:
+            self.__rtc_project_id__ = rtc_project_id
+
     @property
     def token(self):
         return self.__token__
+
+    @property
+    def rtc_token(self):
+        return self.__rtc_token__
 
     @property
     def project_id(self):
@@ -128,6 +149,9 @@ class CloudAuthProxy(CloudAPIProxy):
                 if check or (not self.project_id):
                     self.__project_id__ = await self.get_project_id(
                         token=self.token
+                    )
+                    self.__rtc_project_id__ = await self.get_project_id(
+                        token=self.rtc_token
                     )
                     check = True
             if check:
@@ -165,10 +189,26 @@ class CloudAuthProxy(CloudAPIProxy):
                 domain=domain,
                 project_id=region
             )
-
         except Exception as e:
             self.logger.debug(traceback.format_exc())
             self.logger.error(f"Update token failed: {e}")
+
+        rtc_name = self.config.get("rtc_username", "").strip()
+        rtc_password = self.config.get("rtc_password", "").strip()
+        rtc_domain = self.config.get("rtc_domain", "").strip()
+        if not (rtc_name and rtc_password):
+            raise CloudError("rtc_username or rtc_password not set", 401)
+        try:
+            self.__rtc_token__, self.__rtc_token_expires__ = await self.get_token(
+                name=rtc_name,
+                password=rtc_password,
+                domain=rtc_domain,
+                project_id=region
+            )
+        except Exception as e:
+            self.logger.debug(traceback.format_exc())
+            self.logger.error(f"Update rtc_token failed: {e}")
+
         return True
 
     async def get_token(
@@ -283,7 +323,7 @@ class CloudOMSProxy(CloudAPIProxy):
         self._all_properties_map = {}
         super(CloudOMSProxy, self).__init__(config, resource)
 
-    def update_token(self, token: str = "", project_id: str = ""):
+    def update_token(self, token: str = "", project_id: str = "", rtc_token: str = "", rtc_project_id: str = ""):
         if token:
             self._token = token.strip()
             self._ext_header["X-Auth-Token"] = self._token
