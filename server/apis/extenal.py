@@ -21,6 +21,7 @@ from typing import List
 from typing import Dict
 from typing import Optional
 
+import yaml
 from pydantic import BaseModel
 from pyee.asyncio import AsyncIOEventEmitter
 from robosdk.common.config import Config
@@ -446,7 +447,8 @@ class CloudRTC(AsyncIOEventEmitter):
             }
             app.run_env.update(run_env)
 
-    def _add_single_client(self, robot: RobotModel, client_id: str, client_name: str):
+    def _add_single_client(self, robot: RobotModel, client_id: str,
+                           client_name: str):
         rtc: RTCModel = self._app_env[robot.robot_id]["rtc"]
         rooms: RoomManage = self._app_env[robot.robot_id]["rooms"]
         room: RoomModel = self._app_env[robot.robot_id]["room"]
